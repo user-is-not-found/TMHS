@@ -19,7 +19,7 @@
         </div>
         <div>
           <h1 class="text-xl md:text-2xl font-bold text-slate-800">健康中心 傷病護理登記系統</h1>
-          <p class="text-xs text-slate-500 mt-0.5">學期管理 ‧ 學生名冊 ‧ 傷病報表統計</p>
+          <p class="text-xs text-slate-500 mt-0.5">全功能資料管理 ‧ 學生名冊 ‧ 傷病報表統計</p>
         </div>
       </div>
 
@@ -36,7 +36,7 @@
             📋 登記與報表
           </a>
           <a href="#settings" id="tabBtn-settings" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition">
-            ⚙️ 系統設定 (名冊維護)
+            ⚙️ 系統設定 (完整維護)
           </a>
         </nav>
       </div>
@@ -46,9 +46,11 @@
       
       <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200">
         <form id="careForm" class="space-y-5">
+          <input type="hidden" id="edit_record_id" value="">
+          
           <div class="bg-teal-50/50 p-4 rounded-xl border border-teal-100 space-y-3">
             <div class="flex justify-between items-center">
-              <h2 class="text-xs font-bold text-teal-900 uppercase tracking-wide">基本受傷資訊</h2>
+              <h2 id="formModeTitle" class="text-xs font-bold text-teal-900 uppercase tracking-wide">新增傷病登記</h2>
               <span class="text-xs text-slate-500 font-medium">學期起訖：<span id="labelSemesterRange" class="font-bold text-teal-700">-</span></span>
             </div>
             
@@ -79,7 +81,7 @@
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">發生地點</label>
                 <div id="locationContainer">
-                  <input type="text" id="location_field" placeholder="可手動輸入或至設定新增" class="w-full p-2 border rounded-lg bg-white text-sm">
+                  <input type="text" id="location_field" placeholder="可直接填寫或由設定新增" class="w-full p-2 border rounded-lg bg-white text-sm">
                 </div>
               </div>
               <div>
@@ -121,9 +123,14 @@
             <input type="text" id="note" placeholder="可選填：事故詳細經過、是否通知家長、就醫細節..." class="w-full p-2 border rounded-lg text-sm bg-white">
           </div>
 
-          <button type="submit" id="submitBtn" class="w-full bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-bold py-3.5 rounded-xl shadow transition">
-            送出登記紀錄
-          </button>
+          <div class="flex gap-2">
+            <button type="submit" id="submitBtn" class="flex-1 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-bold py-3.5 rounded-xl shadow transition">
+              送出登記紀錄
+            </button>
+            <button type="button" id="cancelEditBtn" onclick="cancelEditRecord()" class="hidden px-5 bg-slate-400 hover:bg-slate-500 text-white font-bold py-3.5 rounded-xl shadow transition">
+              取消修改
+            </button>
+          </div>
         </form>
       </section>
 
@@ -133,7 +140,7 @@
             <h3 class="font-bold text-slate-800 text-base">
               傷病護理登記簿清單 (<span class="currentSemText">--</span> 學期)
             </h3>
-            <p class="text-xs text-slate-400 mt-0.5">點擊右側按鈕可匯出符合公務格式之標準 Excel 報表</p>
+            <p class="text-xs text-slate-400 mt-0.5">點擊修改可將紀錄回填至上方表單編輯；點擊右側按鈕可匯出標準 Excel 報表</p>
           </div>
           <div class="flex items-center gap-2">
             <button onclick="fetchRecords()" class="text-xs text-teal-700 hover:underline px-2 py-1 font-medium">重新整理</button>
@@ -154,7 +161,7 @@
                 <th class="p-2 border">傷病類別</th>
                 <th class="p-2 border">處理方式</th>
                 <th class="p-2 border">備註</th>
-                <th class="p-2 border text-center">操作</th>
+                <th class="p-2 border text-center w-28">操作</th>
               </tr>
             </thead>
             <tbody id="recordsTable" class="divide-y text-slate-700">
@@ -171,10 +178,10 @@
         <div class="border-b pb-3 flex justify-between items-center flex-wrap gap-2">
           <div>
             <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-              <span>👥</span> 學生名冊管理 (檢視、修改、編輯、刪除)
+              <span>👥</span> 班級與學生名冊維護 (新增、修改、刪除)
             </h2>
             <p class="text-xs text-slate-500 mt-1">
-              綁定學期：<span class="font-bold text-teal-700 currentSemText">--</span>。可批次匯入名單，也可分班檢視、單獨新增轉學生或修改姓名座號。
+              綁定學期：<span class="font-bold text-teal-700 currentSemText">--</span>。支援單筆手動新增班級與學生、批次匯入、個別修改姓名座號及刪除。
             </p>
           </div>
         </div>
@@ -194,19 +201,20 @@
 
         <div class="space-y-3 pt-2">
           <div class="flex flex-wrap justify-between items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
-            <div class="flex items-center gap-2">
-              <label class="text-xs font-bold text-slate-700">選擇檢視班級：</label>
+            <div class="flex flex-wrap items-center gap-2">
+              <label class="text-xs font-bold text-slate-700">檢視班級：</label>
               <select id="manageClassSelect" onchange="loadClassStudentsForManage()" class="p-1.5 border rounded-lg bg-white text-xs font-bold text-teal-800">
                 <option value="">載入班級中...</option>
               </select>
-              <button onclick="editCurrentClassName()" class="text-xs text-blue-600 hover:underline">重新命名班級</button>
-              <button onclick="deleteCurrentClass()" class="text-xs text-rose-600 hover:underline">刪除整班</button>
+              <button onclick="openAddClassPrompt()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold py-1 px-2.5 rounded-md shadow-xs">+ 新增班級</button>
+              <button onclick="editCurrentClassName()" class="text-xs text-blue-600 hover:underline">修改名稱</button>
+              <button onclick="deleteCurrentClass()" class="text-xs text-rose-600 hover:underline">刪除班級</button>
             </div>
 
             <div class="flex items-center gap-2">
-              <input type="text" id="searchStudentInput" oninput="filterStudentTable()" placeholder="搜尋姓名或座號..." class="p-1.5 border rounded-lg text-xs bg-white w-40">
+              <input type="text" id="searchStudentInput" oninput="filterStudentTable()" placeholder="搜尋姓名或座號..." class="p-1.5 border rounded-lg text-xs bg-white w-36">
               <button onclick="openAddStudentPrompt()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-1.5 px-3 rounded-lg shadow-sm">
-                + 單獨新增學生
+                + 新增學生
               </button>
             </div>
           </div>
@@ -232,14 +240,14 @@
       <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="border-b pb-3">
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <span>📅</span> 學期管理與日期起訖設定
+            <span>📅</span> 學期管理與日期起訖設定 (新增、修改、刪除)
           </h2>
-          <p class="text-xs text-slate-500 mt-1">設定各學期之起訖日期，並指定系統預設學期。</p>
+          <p class="text-xs text-slate-500 mt-1">設定各學期之起訖日期，指定系統預設學期，或修改歷史學期時間。</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-            <h3 class="text-xs font-bold text-slate-700">新增或修改學期</h3>
+            <h3 class="text-xs font-bold text-slate-700">新增或編輯學期</h3>
             <div>
               <label class="block text-xs text-slate-600 mb-1">學期代碼 (例：114-1, 114-2) *</label>
               <input type="text" id="cfgSemesterId" placeholder="114-1" class="w-full p-2 border rounded-lg text-xs bg-white">
@@ -288,23 +296,33 @@
       <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="border-b pb-3">
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <span>📍</span> 校園常見地點管理
+            <span>📍</span> 校園常見地點管理 (新增、修改、刪除)
           </h2>
-          <p class="text-xs text-slate-500 mt-1">地點清單建立後，日常登記表單的「地點」欄位會自動切換為選單，支援個別修改與刪除。</p>
+          <p class="text-xs text-slate-500 mt-1">地點清單建立後，日常登記表單的地點欄位會自動切換為選單，支援個別新增、修改與刪除。</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">大量批次新增地點（每行一個）</label>
-            <textarea id="locationTextInput" rows="4" class="w-full p-2.5 border rounded-lg text-xs" placeholder="操場&#10;體育館&#10;活動中心&#10;各班教室&#10;走廊/樓梯"></textarea>
-            <button type="button" onclick="handleLocationImport()" class="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition">
-              儲存地點清單
-            </button>
+          <div class="space-y-4">
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+              <span class="text-xs font-bold text-slate-700 block">+ 單筆新增地點</span>
+              <div class="flex gap-2">
+                <input type="text" id="singleLocationInput" placeholder="例：活動中心一樓" class="flex-1 p-2 border rounded-lg text-xs bg-white">
+                <button type="button" onclick="addSingleLocation()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-4 rounded-lg shadow-sm">新增</button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">大量批次新增地點（每行一個）</label>
+              <textarea id="locationTextInput" rows="3" class="w-full p-2.5 border rounded-lg text-xs" placeholder="操場&#10;體育館&#10;各班教室"></textarea>
+              <button type="button" onclick="handleLocationImport()" class="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition">
+                批次儲存地點
+              </button>
+            </div>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">現存校園地點列表 (點擊編輯/刪除)：</label>
-            <div id="currentLocationsList" class="p-2 bg-slate-50 border rounded-lg max-h-48 overflow-y-auto space-y-1.5 text-xs">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">現存校園地點列表 (可個別編輯修改/刪除)：</label>
+            <div id="currentLocationsList" class="p-2 bg-slate-50 border rounded-lg max-h-56 overflow-y-auto space-y-1.5 text-xs">
               載入中...
             </div>
           </div>
@@ -314,9 +332,9 @@
       <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="border-b pb-3">
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <span>🏷️</span> 傷病分類與處置細項自訂
+            <span>🏷️</span> 傷病分類與處置細項自訂 (新增、修改、刪除)
           </h2>
-          <p class="text-xs text-slate-500 mt-1">可隨時擴充或刪減項目標籤，新增後會即時反映於登記勾選區與匯出報表。</p>
+          <p class="text-xs text-slate-500 mt-1">可隨時擴充、點擊修改名稱或刪除項目標籤，即時連動登記核選區與匯出報表。</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -364,7 +382,6 @@
     let symptoms = [];
     let treatments = [];
     let rawRecords = [];
-
     let currentClassStudents = [];
 
     function handleHashRouting() {
@@ -518,7 +535,21 @@
       } else {
         classSelect.innerHTML = `<option value="">[${sem}] 尚未建立班級</option>`;
         manageClassSelect.innerHTML = `<option value="">[${sem}] 尚未建立班級</option>`;
-        document.getElementById('studentManageTbody').innerHTML = `<tr><td colspan="4" class="text-center p-4 text-slate-400">[${sem}] 學期目前無班級與學生，請從上方匯入。</td></tr>`;
+        document.getElementById('studentManageTbody').innerHTML = `<tr><td colspan="4" class="text-center p-4 text-slate-400">[${sem}] 學期目前無班級與學生，請新增或匯入。</td></tr>`;
+      }
+    }
+
+    async function openAddClassPrompt() {
+      const sem = currentSemesterObj.id;
+      const name = prompt(`請輸入要在 [${sem}] 學期新增的班級名稱（例：101、高一忠）：`);
+      if (!name || !name.trim()) return;
+
+      const { error } = await dbClient.from('classes').insert([{ semester: sem, name: name.trim() }]);
+      if (error) {
+        alert('新增班級失敗：' + error.message);
+      } else {
+        alert(`已成功新增班級「${name.trim()}」！`);
+        await initClasses();
       }
     }
 
@@ -633,7 +664,7 @@
     }
 
     async function deleteStudent(id, name) {
-      if (!confirm(`確定要刪除學生「${name}」嗎？該學生的過往護理紀錄可能會受到關聯影響。`)) return;
+      if (!confirm(`確定要刪除學生「${name}」嗎？該學生的過往護理紀錄將一併受到關聯處理。`)) return;
 
       const { error } = await dbClient.from('students').delete().eq('id', id);
       if (error) {
@@ -765,8 +796,22 @@
       }
     }
 
+    async function addSingleLocation() {
+      const input = document.getElementById('singleLocationInput');
+      const val = input.value.trim();
+      if (!val) return alert('請輸入地點名稱！');
+
+      const { error } = await dbClient.from('campus_locations').insert([{ name: val, sort_order: 99 }]);
+      if (error) {
+        alert('新增失敗（可能名稱重複）：' + error.message);
+      } else {
+        input.value = '';
+        initLocations();
+      }
+    }
+
     async function editLocationPrompt(id, oldName) {
-      const newName = prompt('請輸入新的地點名稱：', oldName);
+      const newName = prompt('修改地點名稱：', oldName);
       if (!newName || !newName.trim() || newName === oldName) return;
 
       const { error } = await dbClient.from('campus_locations').update({ name: newName.trim() }).eq('id', id);
@@ -817,8 +862,8 @@
 
     function renderTagList(containerId, list, category) {
       document.getElementById(containerId).innerHTML = list.map(item => `
-        <span class="inline-flex items-center gap-1 bg-white border px-2 py-0.5 rounded text-xs text-slate-700 shadow-2xs">
-          ${item}
+        <span class="inline-flex items-center gap-1.5 bg-white border px-2 py-0.5 rounded text-xs text-slate-700 shadow-2xs">
+          <span onclick="editCustomItemPrompt('${category}', '${item}')" class="cursor-pointer hover:text-blue-600 font-medium" title="點擊修改名稱">${item}</span>
           <button onclick="removeCustomItem('${category}', '${item}')" class="text-rose-400 hover:text-rose-700 font-bold">&times;</button>
         </span>
       `).join('');
@@ -833,6 +878,19 @@
       } else {
         document.getElementById(inputId).value = '';
         await loadSystemSettings();
+      }
+    }
+
+    async function editCustomItemPrompt(category, oldName) {
+      const newName = prompt(`修改項目名稱：`, oldName);
+      if (!newName || !newName.trim() || newName === oldName) return;
+
+      const { error: delErr } = await dbClient.from('system_settings').delete().match({ category, item_name: oldName });
+      if (!delErr) {
+        await dbClient.from('system_settings').insert([{ category, item_name: newName.trim(), sort_order: 99 }]);
+        await loadSystemSettings();
+      } else {
+        alert('修改失敗：' + delErr.message);
       }
     }
 
@@ -884,9 +942,10 @@
       const studentId = document.getElementById('student_select').value;
       if (!classId || !studentId) return alert('請先選取班級與學生！');
 
+      const editRecordId = document.getElementById('edit_record_id').value;
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
-      btn.innerText = '儲存中...';
+      btn.innerText = '處理中...';
 
       const getChecked = (name) => Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(c => c.value);
       const payload = {
@@ -904,26 +963,102 @@
         note: document.getElementById('note').value
       };
 
-      const { error } = await dbClient.from('nursing_records').insert([payload]);
+      let query;
+      if (editRecordId) {
+        query = dbClient.from('nursing_records').update(payload).eq('id', editRecordId);
+      } else {
+        query = dbClient.from('nursing_records').insert([payload]);
+      }
+
+      const { error } = await query;
       if (error) {
         alert('儲存失敗：' + error.message);
       } else {
-        document.getElementById('student_select').value = '';
-        document.getElementById('body_part').value = '';
-        document.getElementById('note').value = '';
-        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+        alert(editRecordId ? '登記紀錄已成功修改！' : '登記成功！');
+        cancelEditRecord();
         fetchRecords();
       }
       btn.disabled = false;
-      btn.innerText = '送出登記紀錄';
     });
+
+    async function editRecord(id) {
+      const rec = rawRecords.find(r => r.id === id);
+      if (!rec) return;
+
+      document.getElementById('edit_record_id').value = rec.id;
+      document.getElementById('formModeTitle').innerText = '編輯修改傷病登記';
+      document.getElementById('submitBtn').innerText = '儲存修改';
+      document.getElementById('cancelEditBtn').classList.remove('hidden');
+
+      document.getElementById('record_date').value = rec.record_date;
+      document.getElementById('record_time').value = rec.record_time?.slice(0, 5);
+      document.getElementById('body_part').value = rec.body_part || '';
+      document.getElementById('note').value = rec.note || '';
+
+      const sideBtns = document.querySelectorAll('.side-btn');
+      sideBtns.forEach(b => {
+        if (b.innerText === (rec.side || '無')) {
+          setSide(b, rec.side || '');
+        }
+      });
+
+      const locField = document.getElementById('location_field');
+      if (locField) locField.value = rec.location || '';
+
+      document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+      (rec.accident_types || []).forEach(val => {
+        const chk = document.querySelector(`input[name="accidents"][value="${val}"]`);
+        if (chk) chk.checked = true;
+      });
+      (rec.symptom_types || []).forEach(val => {
+        const chk = document.querySelector(`input[name="symptoms"][value="${val}"]`);
+        if (chk) chk.checked = true;
+      });
+      (rec.treatments || []).forEach(val => {
+        const chk = document.querySelector(`input[name="treatments"][value="${val}"]`);
+        if (chk) chk.checked = true;
+      });
+
+      document.getElementById('class_select').value = rec.class_id;
+      
+      const stuSelect = document.getElementById('student_select');
+      stuSelect.disabled = true;
+      stuSelect.innerHTML = '<option value="">載入學生名單中...</option>';
+
+      const { data: students } = await dbClient.from('students').select('id, seat_no, name').eq('class_id', rec.class_id).order('seat_no');
+      if (students && students.length > 0) {
+        stuSelect.disabled = false;
+        stuSelect.innerHTML = '<option value="">-- 選取學生 --</option>';
+        students.forEach(s => stuSelect.innerHTML += `<option value="${s.id}">${s.seat_no}號 ${s.name}</option>`);
+        stuSelect.value = rec.student_id;
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelEditRecord() {
+      document.getElementById('edit_record_id').value = '';
+      document.getElementById('formModeTitle').innerText = '新增傷病登記';
+      document.getElementById('submitBtn').innerText = '送出登記紀錄';
+      document.getElementById('cancelEditBtn').classList.add('hidden');
+
+      document.getElementById('student_select').value = '';
+      document.getElementById('body_part').value = '';
+      document.getElementById('note').value = '';
+      document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+
+      const sideBtns = document.querySelectorAll('.side-btn');
+      sideBtns.forEach(b => {
+        if (b.innerText === '無') setSide(b, '');
+      });
+    }
 
     async function fetchRecords() {
       if (!currentSemesterObj) return;
       const sem = currentSemesterObj.id;
       const { data } = await dbClient
         .from('nursing_records')
-        .select(`id, semester, record_date, record_time, location, body_part, side, accident_types, symptom_types, treatments, note, classes(name), students(seat_no, name)`)
+        .select(`id, semester, record_date, record_time, location, body_part, side, accident_types, symptom_types, treatments, note, class_id, student_id, classes(name), students(seat_no, name)`)
         .eq('semester', sem)
         .order('record_date', { ascending: false })
         .order('record_time', { ascending: false });
@@ -944,7 +1079,8 @@
           <td class="p-2 border text-slate-600">${[...(r.accident_types || []), ...(r.symptom_types || [])].join(', ') || '-'}</td>
           <td class="p-2 border text-slate-600">${(r.treatments || []).join(', ') || '-'}</td>
           <td class="p-2 border text-slate-400">${r.note || ''}</td>
-          <td class="p-2 border text-center">
+          <td class="p-2 border text-center whitespace-nowrap">
+            <button onclick="editRecord('${r.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-2">修改</button>
             <button onclick="deleteRecord('${r.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-semibold">刪除</button>
           </td>
         </tr>
