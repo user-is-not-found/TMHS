@@ -77,17 +77,40 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2">
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">發生地點</label>
                 <div id="locationContainer">
                   <input type="text" id="location_field" placeholder="可直接填寫或由設定新增" class="w-full p-2 border rounded-lg bg-white text-sm">
                 </div>
               </div>
+
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">受傷部位</label>
-                <input type="text" id="body_part" placeholder="例如：右膝蓋、前額、手腕" class="w-full p-2 border rounded-lg bg-white text-sm">
+                <div class="flex gap-1.5">
+                  <select id="body_part_select" onchange="onBodyPartSelectChange(this)" class="w-full p-2 border rounded-lg bg-white text-sm">
+                    <option value="">-- 請選擇部位 --</option>
+                    <option value="頭">頭</option>
+                    <option value="頸">頸</option>
+                    <option value="肩">肩</option>
+                    <option value="胸">胸</option>
+                    <option value="腹">腹</option>
+                    <option value="背">背</option>
+                    <option value="眼">眼</option>
+                    <option value="顏面">顏面</option>
+                    <option value="口腔">口腔</option>
+                    <option value="耳鼻喉">耳鼻喉</option>
+                    <option value="上肢">上肢</option>
+                    <option value="腰">腰</option>
+                    <option value="下肢">下肢</option>
+                    <option value="臀部">臀部</option>
+                    <option value="會陰部">會陰部</option>
+                    <option value="其他">其他(自填)</option>
+                  </select>
+                  <input type="text" id="body_part_custom" placeholder="填寫部位" class="hidden w-28 p-2 border rounded-lg bg-white text-sm">
+                </div>
               </div>
+
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">側別</label>
                 <div class="grid grid-cols-4 gap-1">
@@ -97,6 +120,42 @@
                   <button type="button" onclick="setSide(this, '')" class="side-btn p-2 border rounded-lg bg-teal-600 text-white font-bold text-xs">無</button>
                 </div>
                 <input type="hidden" id="side" value="">
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">體溫 (°C)</label>
+                  <div class="flex gap-1">
+                    <input type="number" step="0.1" min="34" max="42" id="body_temperature" placeholder="36.5" class="w-full p-2 border rounded-lg bg-white text-sm">
+                    <select onchange="document.getElementById('body_temperature').value=this.value; this.value='';" class="p-1 border rounded-lg bg-slate-50 text-xs w-12" title="常用溫度快速填入">
+                      <option value="">選</option>
+                      <option value="36.2">36.2</option>
+                      <option value="36.5">36.5</option>
+                      <option value="36.8">36.8</option>
+                      <option value="37.2">37.2</option>
+                      <option value="37.5">37.5</option>
+                      <option value="38.0">38.0</option>
+                      <option value="38.5">38.5</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">休息 (分)</label>
+                  <div class="flex gap-1">
+                    <input type="number" min="0" step="1" id="rest_minutes" placeholder="0" class="w-full p-2 border rounded-lg bg-white text-sm">
+                    <select onchange="document.getElementById('rest_minutes').value=this.value; this.value='';" class="p-1 border rounded-lg bg-slate-50 text-xs w-12" title="常用時間快速填入">
+                      <option value="">選</option>
+                      <option value="10">10</option>
+                      <option value="15">15</option>
+                      <option value="20">20</option>
+                      <option value="30">30</option>
+                      <option value="40">40</option>
+                      <option value="50">50</option>
+                      <option value="60">60</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -158,6 +217,7 @@
                 <th class="p-2 border">班級/學生</th>
                 <th class="p-2 border">地點</th>
                 <th class="p-2 border">部位</th>
+                <th class="p-2 border">體溫/休息</th>
                 <th class="p-2 border">傷病類別</th>
                 <th class="p-2 border">處理方式</th>
                 <th class="p-2 border">備註</th>
@@ -165,7 +225,7 @@
               </tr>
             </thead>
             <tbody id="recordsTable" class="divide-y text-slate-700">
-              <tr><td colspan="8" class="text-center p-4 text-slate-400">載入紀錄中...</td></tr>
+              <tr><td colspan="9" class="text-center p-4 text-slate-400">載入紀錄中...</td></tr>
             </tbody>
           </table>
         </div>
@@ -384,6 +444,8 @@
     let rawRecords = [];
     let currentClassStudents = [];
 
+    const predefinedBodyParts = ['頭', '頸', '肩', '胸', '腹', '背', '眼', '顏面', '口腔', '耳鼻喉', '上肢', '腰', '下肢', '臀部', '會陰部'];
+
     function handleHashRouting() {
       const hash = window.location.hash.toLowerCase();
       const viewRegister = document.getElementById('view-register');
@@ -408,6 +470,43 @@
       }
     }
     window.addEventListener('hashchange', handleHashRouting);
+
+    function onBodyPartSelectChange(sel) {
+      const customInput = document.getElementById('body_part_custom');
+      if (sel.value === '其他') {
+        customInput.classList.remove('hidden');
+        customInput.focus();
+      } else {
+        customInput.classList.add('hidden');
+        customInput.value = '';
+      }
+    }
+
+    function getSelectedBodyPart() {
+      const selVal = document.getElementById('body_part_select').value;
+      if (selVal === '其他') {
+        return document.getElementById('body_part_custom').value.trim() || '其他';
+      }
+      return selVal;
+    }
+
+    function setBodyPartValue(val) {
+      const sel = document.getElementById('body_part_select');
+      const customInput = document.getElementById('body_part_custom');
+      if (!val) {
+        sel.value = '';
+        customInput.classList.add('hidden');
+        customInput.value = '';
+      } else if (predefinedBodyParts.includes(val)) {
+        sel.value = val;
+        customInput.classList.add('hidden');
+        customInput.value = '';
+      } else {
+        sel.value = '其他';
+        customInput.classList.remove('hidden');
+        customInput.value = val;
+      }
+    }
 
     async function loadSemesters() {
       const { data, error } = await dbClient.from('semesters').select('*').order('id', { ascending: false });
@@ -948,6 +1047,10 @@
       btn.innerText = '處理中...';
 
       const getChecked = (name) => Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(c => c.value);
+      
+      const restMinVal = document.getElementById('rest_minutes').value.trim();
+      const tempVal = document.getElementById('body_temperature').value.trim();
+
       const payload = {
         semester: currentSemesterObj.id,
         record_date: document.getElementById('record_date').value,
@@ -955,8 +1058,10 @@
         class_id: classId,
         student_id: studentId,
         location: document.getElementById('location_field').value,
-        body_part: document.getElementById('body_part').value,
+        body_part: getSelectedBodyPart(),
         side: document.getElementById('side').value,
+        body_temperature: tempVal ? parseFloat(tempVal) : null,
+        rest_minutes: restMinVal ? parseInt(restMinVal) : null,
         accident_types: getChecked('accidents'),
         symptom_types: getChecked('symptoms'),
         treatments: getChecked('treatments'),
@@ -992,7 +1097,10 @@
 
       document.getElementById('record_date').value = rec.record_date;
       document.getElementById('record_time').value = rec.record_time?.slice(0, 5);
-      document.getElementById('body_part').value = rec.body_part || '';
+      
+      setBodyPartValue(rec.body_part || '');
+      document.getElementById('body_temperature').value = rec.body_temperature !== null && rec.body_temperature !== undefined ? rec.body_temperature : '';
+      document.getElementById('rest_minutes').value = rec.rest_minutes !== null && rec.rest_minutes !== undefined ? rec.rest_minutes : '';
       document.getElementById('note').value = rec.note || '';
 
       const sideBtns = document.querySelectorAll('.side-btn');
@@ -1043,7 +1151,9 @@
       document.getElementById('cancelEditBtn').classList.add('hidden');
 
       document.getElementById('student_select').value = '';
-      document.getElementById('body_part').value = '';
+      setBodyPartValue('');
+      document.getElementById('body_temperature').value = '';
+      document.getElementById('rest_minutes').value = '';
       document.getElementById('note').value = '';
       document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
 
@@ -1058,7 +1168,7 @@
       const sem = currentSemesterObj.id;
       const { data } = await dbClient
         .from('nursing_records')
-        .select(`id, semester, record_date, record_time, location, body_part, side, accident_types, symptom_types, treatments, note, class_id, student_id, classes(name), students(seat_no, name)`)
+        .select(`id, semester, record_date, record_time, location, body_part, side, body_temperature, rest_minutes, accident_types, symptom_types, treatments, note, class_id, student_id, classes(name), students(seat_no, name)`)
         .eq('semester', sem)
         .order('record_date', { ascending: false })
         .order('record_time', { ascending: false });
@@ -1066,25 +1176,32 @@
       rawRecords = data || [];
       const tbody = document.getElementById('recordsTable');
       if (rawRecords.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center p-4 text-slate-400">[${sem}] 學期尚無登記紀錄</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center p-4 text-slate-400">[${sem}] 學期尚無登記紀錄</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = rawRecords.map(r => `
-        <tr class="hover:bg-slate-50">
-          <td class="p-2 border whitespace-nowrap">${r.record_date?.slice(5)} ${r.record_time?.slice(0,5)}</td>
-          <td class="p-2 border whitespace-nowrap font-medium">${r.classes?.name || ''} ${r.students ? r.students.seat_no + '號 ' + r.students.name : ''}</td>
-          <td class="p-2 border whitespace-nowrap">${r.location || '-'}</td>
-          <td class="p-2 border whitespace-nowrap">${(r.side ? r.side + '側 ' : '') + (r.body_part || '-')}</td>
-          <td class="p-2 border text-slate-600">${[...(r.accident_types || []), ...(r.symptom_types || [])].join(', ') || '-'}</td>
-          <td class="p-2 border text-slate-600">${(r.treatments || []).join(', ') || '-'}</td>
-          <td class="p-2 border text-slate-400">${r.note || ''}</td>
-          <td class="p-2 border text-center whitespace-nowrap">
-            <button onclick="editRecord('${r.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-2">修改</button>
-            <button onclick="deleteRecord('${r.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-semibold">刪除</button>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = rawRecords.map(r => {
+        const tempText = r.body_temperature ? `${r.body_temperature}°C` : '';
+        const restText = r.rest_minutes ? `${r.rest_minutes}分` : '';
+        const vitalText = [tempText, restText].filter(Boolean).join(' / ') || '-';
+
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2 border whitespace-nowrap">${r.record_date?.slice(5)} ${r.record_time?.slice(0,5)}</td>
+            <td class="p-2 border whitespace-nowrap font-medium">${r.classes?.name || ''} ${r.students ? r.students.seat_no + '號 ' + r.students.name : ''}</td>
+            <td class="p-2 border whitespace-nowrap">${r.location || '-'}</td>
+            <td class="p-2 border whitespace-nowrap">${(r.side ? r.side + '側 ' : '') + (r.body_part || '-')}</td>
+            <td class="p-2 border whitespace-nowrap text-teal-700 font-medium">${vitalText}</td>
+            <td class="p-2 border text-slate-600">${[...(r.accident_types || []), ...(r.symptom_types || [])].join(', ') || '-'}</td>
+            <td class="p-2 border text-slate-600">${(r.treatments || []).join(', ') || '-'}</td>
+            <td class="p-2 border text-slate-400">${r.note || ''}</td>
+            <td class="p-2 border text-center whitespace-nowrap">
+              <button onclick="editRecord('${r.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-2">修改</button>
+              <button onclick="deleteRecord('${r.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-semibold">刪除</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     async function deleteRecord(id) {
@@ -1097,23 +1214,24 @@
       const sem = currentSemesterObj.id;
       if (rawRecords.length === 0) return alert(`[${sem}] 學期目前尚無資料可匯出！`);
 
-      const totalCols = 9 + accidents.length + symptoms.length + treatments.length + 1;
+      const totalCols = 11 + accidents.length + symptoms.length + treatments.length + 1;
       const row1 = Array(totalCols).fill('');
       row1[0] = `傷病護理登記本 (${sem} 學期：${currentSemesterObj.start_date} ~ ${currentSemesterObj.end_date})`;
 
       const row2 = Array(totalCols).fill('');
       row2[0] = '日期'; row2[1] = '時間'; row2[2] = '班級'; row2[3] = '座號';
       row2[4] = '姓名'; row2[5] = '地點'; row2[6] = '部位'; row2[7] = '左'; row2[8] = '右';
-      row2[9] = '傷病類別';
-      const treatStart = 9 + accidents.length + symptoms.length;
+      row2[9] = '體溫(°C)'; row2[10] = '休息(分)';
+      row2[11] = '傷病類別';
+      const treatStart = 11 + accidents.length + symptoms.length;
       row2[treatStart] = '處理方式';
       row2[totalCols - 1] = '備註';
 
       const row3 = Array(totalCols).fill('');
-      row3[9] = '意外';
-      row3[9 + accidents.length] = '症狀';
+      row3[11] = '意外';
+      row3[11 + accidents.length] = '症狀';
 
-      const row4 = ['日期', '時間', '班級', '座號', '姓名', '地點', '部位', '左', '右', ...accidents, ...symptoms, ...treatments, '備註'];
+      const row4 = ['日期', '時間', '班級', '座號', '姓名', '地點', '部位', '左', '右', '體溫(°C)', '休息(分)', ...accidents, ...symptoms, ...treatments, '備註'];
 
       const dataRows = rawRecords.map(r => {
         const row = [
@@ -1125,7 +1243,9 @@
           r.location || '',
           r.body_part || '',
           (r.side === '左' || r.side === '雙側') ? '✓' : '',
-          (r.side === '右' || r.side === '雙側') ? '✓' : ''
+          (r.side === '右' || r.side === '雙側') ? '✓' : '',
+          r.body_temperature !== null && r.body_temperature !== undefined ? r.body_temperature : '',
+          r.rest_minutes !== null && r.rest_minutes !== undefined ? r.rest_minutes : ''
         ];
         accidents.forEach(item => row.push((r.accident_types || []).includes(item) ? '✓' : ''));
         symptoms.forEach(item => row.push((r.symptom_types || []).includes(item) ? '✓' : ''));
@@ -1146,9 +1266,11 @@
         { s: { r: 1, c: 6 }, e: { r: 3, c: 6 } },
         { s: { r: 1, c: 7 }, e: { r: 3, c: 7 } },
         { s: { r: 1, c: 8 }, e: { r: 3, c: 8 } },
-        { s: { r: 1, c: 9 }, e: { r: 1, c: treatStart - 1 } },
-        { s: { r: 2, c: 9 }, e: { r: 2, c: 9 + accidents.length - 1 } },
-        { s: { r: 2, c: 9 + accidents.length }, e: { r: 2, c: treatStart - 1 } },
+        { s: { r: 1, c: 9 }, e: { r: 3, c: 9 } },
+        { s: { r: 1, c: 10 }, e: { r: 3, c: 10 } },
+        { s: { r: 1, c: 11 }, e: { r: 1, c: treatStart - 1 } },
+        { s: { r: 2, c: 11 }, e: { r: 2, c: 11 + accidents.length - 1 } },
+        { s: { r: 2, c: 11 + accidents.length }, e: { r: 2, c: treatStart - 1 } },
         { s: { r: 1, c: treatStart }, e: { r: 2, c: totalCols - 2 } },
         { s: { r: 1, c: totalCols - 1 }, e: { r: 3, c: totalCols - 1 } }
       ];
