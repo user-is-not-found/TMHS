@@ -33,10 +33,13 @@
 
         <nav class="flex bg-slate-200/70 p-1 rounded-xl gap-1">
           <a href="#register" id="tabBtn-register" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition">
-            📋 登記與報表
+            📋 登記簿
+          </a>
+          <a href="#reports" id="tabBtn-reports" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition">
+            📊 輸出報表
           </a>
           <a href="#settings" id="tabBtn-settings" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition">
-            ⚙️ 系統設定 (完整維護)
+            ⚙️ 系統設定
           </a>
         </nav>
       </div>
@@ -161,16 +164,11 @@
         <div class="flex flex-wrap justify-between items-center gap-3">
           <div>
             <h3 class="font-bold text-slate-800 text-base">
-              傷病護理登記簿清單 (<span class="currentSemText">--</span> 學期)
+              最新傷病登記列表 (<span class="currentSemText">--</span> 學期)
             </h3>
-            <p class="text-xs text-slate-400 mt-0.5">點擊修改可將紀錄回填至上方表單編輯；點擊右側按鈕可匯出標準 Excel 報表</p>
+            <p class="text-xs text-slate-400 mt-0.5">點擊修改可將紀錄回填至上方表單編輯</p>
           </div>
-          <div class="flex items-center gap-2">
-            <button onclick="fetchRecords()" class="text-xs text-teal-700 hover:underline px-2 py-1 font-medium">重新整理</button>
-            <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3.5 rounded-lg shadow-sm transition flex items-center gap-1">
-              📊 匯出 Excel (.xlsx)
-            </button>
-          </div>
+          <button onclick="fetchRecords()" class="text-xs text-teal-700 hover:underline px-2 py-1 font-medium">重新整理</button>
         </div>
 
         <div class="overflow-x-auto">
@@ -196,6 +194,90 @@
       </section>
     </main>
 
+    <main id="view-reports" class="hidden space-y-6">
+      
+      <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div class="border-b pb-3 flex justify-between items-center flex-wrap gap-2">
+          <div>
+            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+              <span>📊</span> 教育部校園標準傷病報表輸出
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">
+              當前學期：<span class="font-bold text-teal-700 currentSemText">--</span>。可一鍵產生分班、分月、單月統計分析及全學年總體統計報表。
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 bg-teal-50/50 border border-teal-200 rounded-xl space-y-3">
+            <div>
+              <span class="text-xs font-bold text-teal-900 block">1. 傷病清單 (明細列表)</span>
+              <p class="text-[11px] text-slate-500 mt-0.5">匯出包含學生、時段、地點、日期時間與情形之原始紀錄表。</p>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="exportClassBasedList()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
+                📥 依班級分頁匯出 (分班清單)
+              </button>
+              <button onclick="exportMonthBasedList()" class="flex-1 bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
+                📥 依月份分頁匯出 (分月清單)
+              </button>
+            </div>
+          </div>
+
+          <div class="p-4 bg-indigo-50/50 border border-indigo-200 rounded-xl space-y-3">
+            <div>
+              <span class="text-xs font-bold text-indigo-900 block">2. 傷病統計分析報表</span>
+              <p class="text-[11px] text-slate-500 mt-0.5">產出官方 65 列月分析交叉表或 68 欄全學年累計總表。</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <select id="reportMonthSelect" class="p-2 border rounded-lg text-xs bg-white font-bold text-indigo-900">
+                <option value="8">8 月份</option>
+                <option value="9">9 月份</option>
+                <option value="10">10 月份</option>
+                <option value="11">11 月份</option>
+                <option value="12">12 月份</option>
+                <option value="1">1 月份</option>
+                <option value="2">2 月份</option>
+                <option value="3">3 月份</option>
+                <option value="4">4 月份</option>
+                <option value="5">5 月份</option>
+                <option value="6">6 月份</option>
+              </select>
+              <button onclick="exportMonthAnalysisReport()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
+                📥 匯出該月分析表
+              </button>
+              <button onclick="exportYearAnalysisReport()" class="bg-indigo-800 hover:bg-indigo-900 text-white text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
+                📥 匯出學年統計總表
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t space-y-2">
+          <h3 class="text-xs font-bold text-slate-700">即時登記統計概覽：</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span class="text-slate-500 text-[11px] block">學期總人次</span>
+              <span id="repStatTotal" class="text-xl font-bold text-slate-800">0</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span class="text-slate-500 text-[11px] block">男生人次</span>
+              <span id="repStatMale" class="text-xl font-bold text-blue-600">0</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span class="text-slate-500 text-[11px] block">女生人次</span>
+              <span id="repStatFemale" class="text-xl font-bold text-rose-600">0</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span class="text-slate-500 text-[11px] block">觀察總分鐘數</span>
+              <span id="repStatMinutes" class="text-xl font-bold text-teal-600">0</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
     <main id="view-settings" class="hidden space-y-6">
       
       <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
@@ -213,7 +295,7 @@
         <div class="p-3.5 bg-blue-50/60 border border-blue-200 rounded-xl space-y-2">
           <div class="flex justify-between items-center">
             <span class="text-xs font-bold text-blue-900">📥 批次匯入 Excel / CSV 名單</span>
-            <span class="text-[11px] text-blue-700">表頭須包含：班級、座號、姓名</span>
+            <span class="text-[11px] text-blue-700">表頭須包含：班級、座號、姓名（可含性別）</span>
           </div>
           <div class="flex flex-wrap items-center gap-3">
             <input type="file" id="studentFileInput" accept=".xlsx, .xls, .csv" class="text-xs p-1.5 border rounded-lg bg-white flex-1 min-w-[220px]">
@@ -249,12 +331,13 @@
                 <tr>
                   <th class="p-2.5 border-b w-16">座號</th>
                   <th class="p-2.5 border-b">學生姓名</th>
+                  <th class="p-2.5 border-b">性別</th>
                   <th class="p-2.5 border-b">所屬班級</th>
                   <th class="p-2.5 border-b text-center w-28">操作</th>
                 </tr>
               </thead>
               <tbody id="studentManageTbody" class="divide-y text-slate-700">
-                <tr><td colspan="4" class="text-center p-4 text-slate-400">請先選取班級以檢視名冊</td></tr>
+                <tr><td colspan="5" class="text-center p-4 text-slate-400">請先選取班級以檢視名冊</td></tr>
               </tbody>
             </table>
           </div>
@@ -410,27 +493,42 @@
 
     const predefinedBodyParts = ['頭', '頸', '肩', '胸', '腹', '背', '眼', '顏面', '口腔', '耳鼻喉', '上肢', '腰', '下肢', '臀部', '會陰部', '其他'];
 
+    const stdLocations = ['操場', '遊戲運動器材', '普通教室', '專科教室', '走廊', '樓梯', '地下室', '體育館活動中心', '廁所', '校外', '其它'];
+    const stdBodyParts = ['頭', '眼', '口腔', '顏面', '耳鼻喉', '胸', '腹', '背', '肩', '上肢', '腰', '下肢', '頸', '臀部', '會陰部'];
+    const stdAccidents = ['擦傷', '裂割刺傷', '夾壓傷', '挫撞傷', '扭傷', '灼燙傷', '叮咬傷', '骨折', '舊傷', '外科其它'];
+    const stdSymptoms = ['發燒', '暈眩', '噁心嘔吐', '頭痛', '牙痛', '胃痛', '腹痛', '腹瀉', '經痛', '氣喘', '流鼻血', '疹癢', '眼疾', '內科其它'];
+    const stdTreatments = ['傷口處理', '冰敷', '熱敷', '休息觀察', '通知家長', '家長帶回', '校方送醫', '衛生教育', '處理其他'];
+
     function handleHashRouting() {
       const hash = window.location.hash.toLowerCase();
       const viewRegister = document.getElementById('view-register');
+      const viewReports = document.getElementById('view-reports');
       const viewSettings = document.getElementById('view-settings');
       const btnRegister = document.getElementById('tabBtn-register');
+      const btnReports = document.getElementById('tabBtn-reports');
       const btnSettings = document.getElementById('tabBtn-settings');
 
+      viewRegister.classList.add('hidden');
+      viewReports.classList.add('hidden');
+      viewSettings.classList.add('hidden');
+
+      btnRegister.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900';
+      btnReports.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900';
+      btnSettings.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900';
+
       if (hash === '#settings') {
-        viewRegister.classList.add('hidden');
         viewSettings.classList.remove('hidden');
         btnSettings.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-white text-teal-800 shadow-sm';
-        btnRegister.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900';
+      } else if (hash === '#reports') {
+        viewReports.classList.remove('hidden');
+        btnReports.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-white text-teal-800 shadow-sm';
       } else {
         if (hash !== '#register') {
           window.location.hash = 'register';
           return;
         }
         viewRegister.classList.remove('hidden');
-        viewSettings.classList.add('hidden');
         btnRegister.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-white text-teal-800 shadow-sm';
-        btnSettings.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900';
       }
     }
     window.addEventListener('hashchange', handleHashRouting);
@@ -650,13 +748,13 @@
       } else {
         classSelect.innerHTML = `<option value="">[${sem}] 尚未建立班級</option>`;
         manageClassSelect.innerHTML = `<option value="">[${sem}] 尚未建立班級</option>`;
-        document.getElementById('studentManageTbody').innerHTML = `<tr><td colspan="4" class="text-center p-4 text-slate-400">[${sem}] 學期目前無班級與學生，請新增或匯入。</td></tr>`;
+        document.getElementById('studentManageTbody').innerHTML = `<tr><td colspan="5" class="text-center p-4 text-slate-400">[${sem}] 學期目前無班級與學生，請新增或匯入。</td></tr>`;
       }
     }
 
     async function openAddClassPrompt() {
       const sem = currentSemesterObj.id;
-      const name = prompt(`請輸入要在 [${sem}] 學期新增的班級名稱（例：101、高一忠）：`);
+      const name = prompt(`請輸入要在 [${sem}] 學期新增的班級名稱（例：7年1班、8年1班）：`);
       if (!name || !name.trim()) return;
 
       const { error } = await dbClient.from('classes').insert([{ semester: sem, name: name.trim() }]);
@@ -673,21 +771,21 @@
       const tbody = document.getElementById('studentManageTbody');
 
       if (!classId) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-slate-400">請選取班級以檢視學生名冊</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-400">請選取班級以檢視學生名冊</td></tr>';
         currentClassStudents = [];
         return;
       }
 
-      tbody.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-slate-400">載入名冊中...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-400">載入名冊中...</td></tr>';
 
       const { data: students, error } = await dbClient
         .from('students')
-        .select('id, seat_no, name, class_id')
+        .select('id, seat_no, name, gender, class_id')
         .eq('class_id', classId)
         .order('seat_no');
 
       if (error || !students || students.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-slate-400">該班目前尚無學生資料。</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-400">該班目前尚無學生資料。</td></tr>';
         currentClassStudents = [];
         return;
       }
@@ -701,7 +799,7 @@
       const className = document.getElementById('manageClassSelect').selectedOptions[0]?.text || '';
 
       if (list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-slate-400">查無相符學生。</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-400">查無相符學生。</td></tr>';
         return;
       }
 
@@ -709,9 +807,10 @@
         <tr class="hover:bg-slate-50 transition">
           <td class="p-2.5 font-bold text-teal-800">${s.seat_no}</td>
           <td class="p-2.5 font-medium text-slate-800">${s.name}</td>
+          <td class="p-2.5 text-slate-600">${s.gender || '女'}</td>
           <td class="p-2.5 text-slate-500">${className}</td>
           <td class="p-2.5 text-center whitespace-nowrap">
-            <button onclick="editStudentPrompt('${s.id}', ${s.seat_no}, '${s.name}')" class="text-blue-600 hover:text-blue-800 mr-2.5 font-medium">編輯</button>
+            <button onclick="editStudentPrompt('${s.id}', ${s.seat_no}, '${s.name}', '${s.gender || '女'}')" class="text-blue-600 hover:text-blue-800 mr-2.5 font-medium">編輯</button>
             <button onclick="deleteStudent('${s.id}', '${s.name}')" class="text-rose-600 hover:text-rose-800 font-medium">刪除</button>
           </td>
         </tr>
@@ -742,10 +841,13 @@
       const name = prompt('請輸入學生姓名：');
       if (!name || !name.trim()) return alert('學生姓名不能為空！');
 
+      const gender = prompt('請輸入學生性別（男/女）：', '女');
+
       const { error } = await dbClient.from('students').insert([{
         class_id: classId,
         seat_no: seat,
-        name: name.trim()
+        name: name.trim(),
+        gender: (gender && gender.trim() === '男') ? '男' : '女'
       }]);
 
       if (error) {
@@ -756,7 +858,7 @@
       }
     }
 
-    async function editStudentPrompt(id, oldSeat, oldName) {
+    async function editStudentPrompt(id, oldSeat, oldName, oldGender) {
       const newSeatStr = prompt(`修改座號：`, oldSeat);
       if (newSeatStr === null) return;
       const newSeat = parseInt(newSeatStr.trim());
@@ -766,9 +868,11 @@
       if (newName === null) return;
       if (!newName.trim()) return alert('姓名不能為空！');
 
+      const newGender = prompt(`修改性別（男/女）：`, oldGender);
+
       const { error } = await dbClient
         .from('students')
-        .update({ seat_no: newSeat, name: newName.trim() })
+        .update({ seat_no: newSeat, name: newName.trim(), gender: (newGender && newGender.trim() === '男') ? '男' : '女' })
         .eq('id', id);
 
       if (error) {
@@ -823,7 +927,7 @@
       } else {
         alert(`已刪除 ${className}！`);
         await initClasses();
-        document.getElementById('studentManageTbody').innerHTML = '<tr><td colspan="4" class="text-center p-4 text-slate-400">請選取班級以檢視學生名冊</td></tr>';
+        document.getElementById('studentManageTbody').innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-400">請選取班級以檢視學生名冊</td></tr>';
       }
     }
 
@@ -862,9 +966,15 @@
             const cName = String(r['班級'] || r['class'] || '').trim();
             const seat = parseInt(r['座號'] || r['seat_no'] || 0);
             const name = String(r['姓名'] || r['name'] || '').trim();
+            const gender = String(r['性別'] || r['gender'] || '女').trim();
             const classId = classMap.get(cName);
             if (classId && name && seat > 0) {
-              studentsToInsert.push({ class_id: classId, seat_no: seat, name: name });
+              studentsToInsert.push({ 
+                class_id: classId, 
+                seat_no: seat, 
+                name: name,
+                gender: gender === '男' ? '男' : '女'
+              });
             }
           }
 
@@ -961,9 +1071,9 @@
         symptoms = data.filter(d => d.category === 'symptom').map(d => d.item_name);
         treatments = data.filter(d => d.category === 'treatment').map(d => d.item_name);
       } else {
-        accidents = ['夾壓傷', '擦傷', '裂割傷', '挫撞傷', '扭傷', '灼燙傷', '骨折', '叮咬傷', '舊傷', '其他'];
-        symptoms = ['流鼻血', '暈眩', '牙痛', '眼疾', '胃痛', '腹痛', '頭痛', '發燒', '噁心嘔吐', '腹瀉', '疹癢', '經痛', '氣喘', '其他'];
-        treatments = ['傷口處理', '冰敷', '熱敷', '休息觀察', '通知家長', '轉送就醫', '衛生教育', '其他'];
+        accidents = ['擦傷', '裂割刺傷', '夾壓傷', '挫撞傷', '扭傷', '灼燙傷', '叮咬傷', '骨折', '舊傷', '外科其它'];
+        symptoms = ['發燒', '暈眩', '噁心嘔吐', '頭痛', '牙痛', '胃痛', '腹痛', '腹瀉', '經痛', '氣喘', '流鼻血', '疹癢', '眼疾', '內科其它'];
+        treatments = ['傷口處理', '冰敷', '熱敷', '休息觀察', '通知家長', '家長帶回', '校方送醫', '衛生教育', '處理其他'];
       }
 
       renderCheckboxes('accidentGroup', accidents, 'accidents');
@@ -1178,12 +1288,15 @@
       const sem = currentSemesterObj.id;
       const { data } = await dbClient
         .from('nursing_records')
-        .select(`id, semester, record_date, record_time, location, body_part, side, body_temperature, rest_minutes, accident_types, symptom_types, treatments, note, class_id, student_id, classes(name), students(seat_no, name)`)
+        .select(`id, semester, record_date, record_time, location, body_part, side, body_temperature, rest_minutes, accident_types, symptom_types, treatments, note, class_id, student_id, classes(name), students(seat_no, name, gender)`)
         .eq('semester', sem)
         .order('record_date', { ascending: false })
         .order('record_time', { ascending: false });
 
       rawRecords = data || [];
+      
+      updateReportOverviewStats();
+
       const tbody = document.getElementById('recordsTable');
       if (rawRecords.length === 0) {
         tbody.innerHTML = `<tr><td colspan="9" class="text-center p-4 text-slate-400">[${sem}] 學期尚無登記紀錄</td></tr>`;
@@ -1214,80 +1327,283 @@
       }).join('');
     }
 
+    function updateReportOverviewStats() {
+      document.getElementById('repStatTotal').innerText = rawRecords.length;
+      let male = 0, female = 0, mins = 0;
+      rawRecords.forEach(r => {
+        const g = r.students?.gender || '女';
+        if (g === '男') male++; else female++;
+        if (r.rest_minutes) mins += parseInt(r.rest_minutes);
+      });
+      document.getElementById('repStatMale').innerText = male;
+      document.getElementById('repStatFemale').innerText = female;
+      document.getElementById('repStatMinutes').innerText = mins;
+    }
+
     async function deleteRecord(id) {
       if (!confirm('確定刪除這筆護理紀錄嗎？')) return;
       await dbClient.from('nursing_records').delete().eq('id', id);
       fetchRecords();
     }
 
-    function exportToExcel() {
+    function getTimePeriod(timeStr) {
+      const h = parseInt(timeStr?.slice(0, 2) || 0);
+      if (h < 12) return '上午';
+      if (h < 14) return '中午';
+      return '下午';
+    }
+
+    function exportClassBasedList() {
       const sem = currentSemesterObj.id;
-      if (rawRecords.length === 0) return alert(`[${sem}] 學期目前尚無資料可匯出！`);
-
-      const totalCols = 11 + accidents.length + symptoms.length + treatments.length + 1;
-      const row1 = Array(totalCols).fill('');
-      row1[0] = `傷病護理登記本 (${sem} 學期：${currentSemesterObj.start_date} ~ ${currentSemesterObj.end_date})`;
-
-      const row2 = Array(totalCols).fill('');
-      row2[0] = '日期'; row2[1] = '時間'; row2[2] = '班級'; row2[3] = '座號';
-      row2[4] = '姓名'; row2[5] = '地點'; row2[6] = '部位'; row2[7] = '左'; row2[8] = '右';
-      row2[9] = '體溫(°C)'; row2[10] = '休息(分)';
-      row2[11] = '傷病類別';
-      const treatStart = 11 + accidents.length + symptoms.length;
-      row2[treatStart] = '處理方式';
-      row2[totalCols - 1] = '備註';
-
-      const row3 = Array(totalCols).fill('');
-      row3[11] = '意外';
-      row3[11 + accidents.length] = '症狀';
-
-      const row4 = ['日期', '時間', '班級', '座號', '姓名', '地點', '部位', '左', '右', '體溫(°C)', '休息(分)', ...accidents, ...symptoms, ...treatments, '備註'];
-
-      const dataRows = rawRecords.map(r => {
-        const row = [
-          r.record_date || '',
-          r.record_time?.slice(0, 5) || '',
-          r.classes?.name || '',
-          r.students?.seat_no || '',
-          r.students?.name || '',
-          r.location || '',
-          r.body_part || '',
-          (r.side === '左' || r.side === '雙側') ? '✓' : '',
-          (r.side === '右' || r.side === '雙側') ? '✓' : '',
-          r.body_temperature !== null && r.body_temperature !== undefined ? r.body_temperature : '',
-          r.rest_minutes !== null && r.rest_minutes !== undefined ? r.rest_minutes : ''
-        ];
-        accidents.forEach(item => row.push((r.accident_types || []).includes(item) ? '✓' : ''));
-        symptoms.forEach(item => row.push((r.symptom_types || []).includes(item) ? '✓' : ''));
-        treatments.forEach(item => row.push((r.treatments || []).includes(item) ? '✓' : ''));
-        row.push(r.note || '');
-        return row;
-      });
-
-      const ws = XLSX.utils.aoa_to_sheet([row1, row2, row3, row4, ...dataRows]);
-      ws['!merges'] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: totalCols - 1 } },
-        { s: { r: 1, c: 0 }, e: { r: 3, c: 0 } },
-        { s: { r: 1, c: 1 }, e: { r: 3, c: 1 } },
-        { s: { r: 1, c: 2 }, e: { r: 3, c: 2 } },
-        { s: { r: 1, c: 3 }, e: { r: 3, c: 3 } },
-        { s: { r: 1, c: 4 }, e: { r: 3, c: 4 } },
-        { s: { r: 1, c: 5 }, e: { r: 3, c: 5 } },
-        { s: { r: 1, c: 6 }, e: { r: 3, c: 6 } },
-        { s: { r: 1, c: 7 }, e: { r: 3, c: 7 } },
-        { s: { r: 1, c: 8 }, e: { r: 3, c: 8 } },
-        { s: { r: 1, c: 9 }, e: { r: 3, c: 9 } },
-        { s: { r: 1, c: 10 }, e: { r: 3, c: 10 } },
-        { s: { r: 1, c: 11 }, e: { r: 1, c: treatStart - 1 } },
-        { s: { r: 2, c: 11 }, e: { r: 2, c: 11 + accidents.length - 1 } },
-        { s: { r: 2, c: 11 + accidents.length }, e: { r: 2, c: treatStart - 1 } },
-        { s: { r: 1, c: treatStart }, e: { r: 2, c: totalCols - 2 } },
-        { s: { r: 1, c: totalCols - 1 }, e: { r: 3, c: totalCols - 1 } }
-      ];
+      if (rawRecords.length === 0) return alert(`[${sem}] 目前無紀錄可匯出！`);
 
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, `${sem}傷病登記本`);
-      XLSX.writeFile(wb, `傷病護理登記本_${sem}_${new Date().toISOString().split('T')[0]}.xlsx`);
+      const grouped = {};
+
+      rawRecords.forEach(r => {
+        const cName = r.classes?.name || '其他班級';
+        if (!grouped[cName]) grouped[cName] = [];
+        grouped[cName].push(r);
+      });
+
+      const indexData = [['大明高中 傷病清單(分班) - 分頁索引'], ['']];
+      Object.keys(grouped).sort().forEach(cName => indexData.push([cName]));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(indexData), '索引頁');
+
+      for (const [cName, list] of Object.entries(grouped)) {
+        const sheetData = [
+          [cName],
+          [],
+          ['年', '班級', '座號', '姓名', '性別', '時段', '地點', '日期時間', '情形']
+        ];
+
+        list.sort((a, b) => (a.record_date + a.record_time).localeCompare(b.record_date + b.record_time));
+
+        list.forEach(r => {
+          const detail = [
+            ...(r.accident_types || []),
+            ...(r.symptom_types || []),
+            ...(r.treatments || []),
+            (r.side ? r.side + '側' : '') + (r.body_part || ''),
+            r.note
+          ].filter(Boolean).join(',');
+
+          sheetData.push([
+            cName.replace(/[^0-9]/g, '').slice(0, 1) || '',
+            cName.replace(/[^0-9]/g, '').slice(1) || '1',
+            r.students?.seat_no || '',
+            r.students?.name || '',
+            r.students?.gender || '女',
+            getTimePeriod(r.record_time),
+            r.location || '',
+            `${r.record_date.replace(/-/g, '/')} ${r.record_time?.slice(0, 5)}`,
+            detail
+          ]);
+        });
+
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sheetData), cName);
+      }
+
+      XLSX.writeFile(wb, `潭子區-私立大明高中_${sem}_傷病清單(分班).xlsx`);
+    }
+
+    function exportMonthBasedList() {
+      const sem = currentSemesterObj.id;
+      if (rawRecords.length === 0) return alert(`[${sem}] 目前無紀錄可匯出！`);
+
+      const wb = XLSX.utils.book_new();
+      const grouped = {};
+
+      rawRecords.forEach(r => {
+        const m = parseInt(r.record_date.split('-')[1]) + '月';
+        if (!grouped[m]) grouped[m] = [];
+        grouped[m].push(r);
+      });
+
+      const indexData = [['大明高中 傷病清單(分月) - 分頁索引'], ['']];
+      Object.keys(grouped).forEach(m => indexData.push([m]));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(indexData), '索引頁');
+
+      for (const [m, list] of Object.entries(grouped)) {
+        const sheetData = [
+          [m],
+          [],
+          ['年', '班級', '座號', '姓名', '性別', '時段', '地點', '日期時間', '情形']
+        ];
+
+        list.sort((a, b) => (a.record_date + a.record_time).localeCompare(b.record_date + b.record_time));
+
+        list.forEach(r => {
+          const cName = r.classes?.name || '';
+          const detail = [
+            ...(r.accident_types || []),
+            ...(r.symptom_types || []),
+            ...(r.treatments || []),
+            (r.side ? r.side + '側' : '') + (r.body_part || ''),
+            r.note
+          ].filter(Boolean).join(',');
+
+          sheetData.push([
+            cName.replace(/[^0-9]/g, '').slice(0, 1) || '',
+            cName.replace(/[^0-9]/g, '').slice(1) || '1',
+            r.students?.seat_no || '',
+            r.students?.name || '',
+            r.students?.gender || '女',
+            getTimePeriod(r.record_time),
+            r.location || '',
+            `${r.record_date.replace(/-/g, '/')} ${r.record_time?.slice(0, 5)}`,
+            detail
+          ]);
+        });
+
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sheetData), m);
+      }
+
+      XLSX.writeFile(wb, `潭子區-私立大明高中_${sem}_傷病清單(分月).xlsx`);
+    }
+
+    function exportMonthAnalysisReport() {
+      const sem = currentSemesterObj.id;
+      const targetMonth = parseInt(document.getElementById('reportMonthSelect').value);
+      const filtered = rawRecords.filter(r => parseInt(r.record_date.split('-')[1]) === targetMonth);
+
+      if (filtered.length === 0) {
+        return alert(`在 [${sem}] 學期中查無 ${targetMonth} 月份的登記紀錄！`);
+      }
+
+      const rows = [
+        ['性別', '', '', '男', '女', '合計']
+      ];
+
+      function countItem(fn) {
+        let m = 0, f = 0;
+        filtered.forEach(r => {
+          if (fn(r)) {
+            if ((r.students?.gender || '女') === '男') m++; else f++;
+          }
+        });
+        return [m, f, m + f];
+      }
+
+      rows.push(['時間', '上午', '', ...countItem(r => getTimePeriod(r.record_time) === '上午')]);
+      rows.push(['', '中午', '', ...countItem(r => getTimePeriod(r.record_time) === '中午')]);
+      rows.push(['', '下午', '', ...countItem(r => getTimePeriod(r.record_time) === '下午')]);
+
+      stdLocations.forEach((loc, idx) => {
+        const tag = idx === 0 ? '地點' : '';
+        rows.push([tag, loc, '', ...countItem(r => (r.location || '') === loc)]);
+      });
+
+      stdBodyParts.forEach((bp, idx) => {
+        const tag = idx === 0 ? '受傷部位' : '';
+        rows.push([tag, bp, '', ...countItem(r => (r.body_part || '').includes(bp))]);
+      });
+
+      stdAccidents.forEach((acc, idx) => {
+        const tag1 = idx === 0 ? '受傷種類' : '';
+        const tag2 = idx === 0 ? '意外傷害' : '';
+        rows.push([tag1, tag2, acc, ...countItem(r => (r.accident_types || []).includes(acc))]);
+      });
+
+      stdSymptoms.forEach((sym, idx) => {
+        const tag2 = idx === 0 ? '症狀' : '';
+        rows.push(['', tag2, sym, ...countItem(r => (r.symptom_types || []).includes(sym))]);
+      });
+
+      stdTreatments.forEach((tr, idx) => {
+        const tag = idx === 0 ? '處理方式' : '';
+        rows.push([tag, tr, '', ...countItem(r => (r.treatments || []).includes(tr))]);
+      });
+
+      let minM = 0, minF = 0;
+      filtered.forEach(r => {
+        const mins = parseInt(r.rest_minutes || 0);
+        if ((r.students?.gender || '女') === '男') minM += mins; else minF += mins;
+      });
+      rows.push(['觀察時間-分', '', '', minM, minF, minM + minF]);
+      rows.push(['承辦人:             組長:             主任:             校長:', '', '', '', '', '']);
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      XLSX.utils.book_append_sheet(wb, ws, '學年報表');
+      XLSX.writeFile(wb, `潭子區-私立大明高中_${sem}_${targetMonth}月學生傷病分析.xlsx`);
+    }
+
+    function exportYearAnalysisReport() {
+      const sem = currentSemesterObj.id;
+      if (rawRecords.length === 0) return alert(`[${sem}] 目前無紀錄可匯出！`);
+
+      const row0 = Array(68).fill('');
+      row0[0] = `潭子區-私立大明高中_${sem}_學生傷病統計分析`;
+
+      const row1 = Array(68).fill('');
+      row1[0] = '項/學期'; row1[1] = '月份'; row1[2] = '性別'; row1[5] = '時間'; row1[8] = '地點'; row1[19] = '部位'; row1[34] = '受傷種類'; row1[58] = '處理方式'; row1[67] = '觀察時間．分';
+
+      const row2 = Array(68).fill('');
+      row2[2] = '合計'; row2[3] = '男'; row2[4] = '女'; row2[5] = '上午'; row2[6] = '中午'; row2[7] = '下午';
+      stdLocations.forEach((l, i) => row2[8 + i] = l);
+      stdBodyParts.forEach((bp, i) => row2[19 + i] = bp);
+      row2[34] = '意外傷害';
+      row2[44] = '症狀';
+      stdTreatments.forEach((tr, i) => row2[58 + i] = tr);
+
+      const row3 = Array(68).fill('');
+      stdAccidents.forEach((a, i) => row3[34 + i] = a);
+      stdSymptoms.forEach((s, i) => row3[44 + i] = s);
+
+      const monthList = sem.includes('1') ? [8, 9, 10, 11, 12, 1] : [2, 3, 4, 5, 6, 7];
+      const dataRows = [];
+      const semName = sem.includes('1') ? '上學期' : '下學期';
+
+      monthList.forEach((m, mIdx) => {
+        const mRecords = rawRecords.filter(r => parseInt(r.record_date.split('-')[1]) === m);
+        const rRow = Array(68).fill(0);
+        rRow[0] = mIdx === 0 ? semName : '';
+        rRow[1] = m;
+
+        let mM = 0, mF = 0, mTotalMins = 0;
+        let am = 0, noon = 0, pm = 0;
+
+        mRecords.forEach(r => {
+          const g = r.students?.gender || '女';
+          if (g === '男') mM++; else mF++;
+          mTotalMins += parseInt(r.rest_minutes || 0);
+
+          const tp = getTimePeriod(r.record_time);
+          if (tp === '上午') am++; else if (tp === '中午') noon++; else pm++;
+
+          stdLocations.forEach((loc, idx) => { if ((r.location || '') === loc) rRow[8 + idx]++; });
+          stdBodyParts.forEach((bp, idx) => { if ((r.body_part || '').includes(bp)) rRow[19 + idx]++; });
+          stdAccidents.forEach((acc, idx) => { if ((r.accident_types || []).includes(acc)) rRow[34 + idx]++; });
+          stdSymptoms.forEach((sym, idx) => { if ((r.symptom_types || []).includes(sym)) rRow[44 + idx]++; });
+          stdTreatments.forEach((tr, idx) => { if ((r.treatments || []).includes(tr)) rRow[58 + idx]++; });
+        });
+
+        rRow[2] = mM + mF;
+        rRow[3] = mM;
+        rRow[4] = mF;
+        rRow[5] = am;
+        rRow[6] = noon;
+        rRow[7] = pm;
+        rRow[67] = mTotalMins;
+
+        dataRows.push(rRow);
+      });
+
+      const totalRow = Array(68).fill(0);
+      totalRow[0] = '總計';
+      totalRow[1] = '合計';
+      for (let c = 2; c < 68; c++) {
+        totalRow[c] = dataRows.reduce((sum, r) => sum + (parseInt(r[c]) || 0), 0);
+      }
+      dataRows.push(totalRow);
+
+      const signRow = ['承辦人:             組長:             主任:             校長:'];
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet([row0, row1, row2, row3, ...dataRows, signRow]);
+      XLSX.utils.book_append_sheet(wb, ws, '學年報表');
+      XLSX.writeFile(wb, `潭子區-私立大明高中_${sem}_學生傷病統計分析.xlsx`);
     }
 
     (async function init() {
